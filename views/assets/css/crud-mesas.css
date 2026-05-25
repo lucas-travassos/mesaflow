@@ -1,36 +1,11 @@
 /* =====================================================
    CRUD-MESAS.CSS - Estilos do Gerenciamento de Mesas
    Mobile-first, responsivo, tema escuro MesaFlow
+   
+   IMPORTANTE: Este arquivo importa header.css para config comum
 ===================================================== */
 
-:root {
-    --bg-dark: #161514;
-    --card-dark: rgba(35, 32, 29, 0.78);
-    --border-soft: rgba(255, 255, 255, 0.14);
-    --text-light: #ffffff;
-    --text-muted: #c9c3d0;
-    --accent: #c7ff00;
-    --accent-glow: rgba(199, 255, 0, 0.45);
-    --blue-glow: rgba(70, 160, 255, 0.35);
-    --red-status: #ff6464;
-    --green-status: #4caf50;
-    
-    --spacing-xs: 4px;
-    --spacing-sm: 8px;
-    --spacing-md: 16px;
-    --spacing-lg: 24px;
-    --spacing-xl: 32px;
-}
-
-* {
-    box-sizing: border-box;
-}
-
-html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-}
+@import url('header.css');
 
 body.crud-page {
     font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
@@ -43,151 +18,23 @@ body.crud-page {
     color: var(--text-light);
 }
 
-/* ===== APP SHELL ===== */
-.app-shell {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-}
-
-/* ===== HEADER ===== */
-.app-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--spacing-lg) var(--spacing-md);
-    background: var(--card-dark);
-    border-bottom: 1px solid var(--border-soft);
-    backdrop-filter: blur(16px);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    gap: var(--spacing-lg);
-}
-
-.brand-link {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-md);
-    text-decoration: none;
-    color: inherit;
-    transition: opacity 0.3s ease;
-}
-
-.brand-link:hover {
-    opacity: 0.8;
-}
-
-.brand-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 10px;
-    background: var(--accent);
-    color: #111;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    box-shadow: 0 0 22px var(--accent-glow);
-    flex-shrink: 0;
-}
-
-.brand-info h1 {
-    font-size: 20px;
-    font-weight: 800;
-    margin: 0;
-    letter-spacing: -0.5px;
-}
-
-.brand-info p {
-    font-size: 12px;
-    color: var(--text-muted);
-    margin: 2px 0 0 0;
-    letter-spacing: 1px;
-    font-weight: 500;
-}
-
-.header-actions {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-md);
+/* ===== HEADER-ACTIONS - CRUD ESPECÍFICO ===== */
+.crud-page .header-actions {
     margin-left: auto;
 }
 
-.user-menu {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    text-align: right;
+/* ===== CONTENT AREA - CRUD ESPECÍFICO ===== */
+.crud-page .content-area {
+    padding: var(--spacing-lg) var(--spacing-md);
 }
 
-.user-name {
-    font-size: 14px;
-    font-weight: 600;
-    display: block;
-}
-
-.user-role {
-    font-size: 11px;
-    color: var(--accent);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    display: block;
-}
-
-.btn-logout {
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
-    background: rgba(255, 100, 100, 0.1);
-    color: #ff6464;
-    border: none;
-    display: flex;
+/* ===== BUTTONS - CRUD ESPECÍFICO ===== */
+.btn-novo {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    font-size: 18px;
-    transition: all 0.3s ease;
-    text-decoration: none;
-}
-
-.btn-logout:hover {
-    background: rgba(255, 100, 100, 0.2);
-    transform: scale(1.05);
-}
-
-/* ===== CONTENT AREA ===== */
-.content-area {
-    flex: 1;
-    padding: var(--spacing-lg) var(--spacing-md);
-    overflow-y: auto;
-}
-
-/* Page Header */
-.page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: var(--spacing-lg);
-    gap: var(--spacing-md);
-}
-
-.page-title h2 {
-    font-size: 28px;
-    font-weight: 800;
-    margin: 0 0 var(--spacing-xs) 0;
-}
-
-.page-title p {
-    font-size: 14px;
-    color: var(--text-muted);
-    margin: 0;
-}
-
-.btn-novo {
-    display: flex;
-    align-items: center;
     gap: var(--spacing-sm);
+    min-height: 44px;
     padding: 12px 20px;
     background: var(--accent);
     color: #111;
@@ -195,10 +42,19 @@ body.crud-page {
     border-radius: 8px;
     font-weight: 700;
     font-size: 14px;
+    line-height: 1;
     cursor: pointer;
     transition: all 0.3s ease;
     white-space: nowrap;
     flex-shrink: 0;
+    text-decoration: none;
+    box-sizing: border-box;
+    min-width: 152px;
+}
+
+.crud-page .page-header .btn-novo,
+.crud-page .page-header .btn-new-order {
+    min-width: 152px;
 }
 
 .btn-novo:hover {
@@ -330,12 +186,12 @@ body.crud-page {
 }
 
 /* Button Group */
-.btn-group {
+.crud-page .btn-group {
     display: flex;
     gap: var(--spacing-sm);
 }
 
-.btn-action {
+.crud-page .btn-action {
     width: 36px;
     height: 36px;
     border-radius: 6px;
@@ -350,24 +206,24 @@ body.crud-page {
     padding: 0;
 }
 
-.btn-editar {
+.crud-page .btn-editar {
     color: #46a0ff;
     border-color: #46a0ff;
     background: rgba(70, 160, 255, 0.1);
 }
 
-.btn-editar:hover {
+.crud-page .btn-editar:hover {
     background: rgba(70, 160, 255, 0.2);
     transform: translateY(-2px);
 }
 
-.btn-deletar {
+.crud-page .btn-deletar {
     color: #ff6464;
     border-color: #ff6464;
     background: rgba(255, 100, 100, 0.1);
 }
 
-.btn-deletar:hover {
+.crud-page .btn-deletar:hover {
     background: rgba(255, 100, 100, 0.2);
     transform: translateY(-2px);
 }
@@ -477,7 +333,7 @@ body.crud-page {
     justify-content: flex-end;
 }
 
-.btn {
+.crud-page .btn {
     border-radius: 6px;
     font-weight: 600;
     font-size: 14px;
@@ -486,23 +342,23 @@ body.crud-page {
     border: none;
 }
 
-.btn-primary {
+.crud-page .btn-primary {
     background: var(--accent);
     color: #111;
 }
 
-.btn-primary:hover {
+.crud-page .btn-primary:hover {
     background: #a8d600;
     transform: translateY(-2px);
 }
 
-.btn-secondary {
+.crud-page .btn-secondary {
     background: transparent;
     color: var(--text-muted);
     border: 1px solid var(--border-soft);
 }
 
-.btn-secondary:hover {
+.crud-page .btn-secondary:hover {
     background: rgba(255, 255, 255, 0.05);
     border-color: var(--text-light);
 }
@@ -528,11 +384,6 @@ body.crud-page {
         align-items: stretch;
     }
 
-    .btn-novo {
-        width: 100%;
-        justify-content: center;
-    }
-
     .mesas-table th,
     .mesas-table td {
         padding: var(--spacing-sm);
@@ -554,7 +405,7 @@ body.crud-page {
 /* Tablet (600px+) */
 @media (min-width: 600px) {
     .app-header {
-        padding: var(--spacing-lg);
+        padding: var(--spacing-xl);
     }
 
     .content-area {
@@ -572,6 +423,11 @@ body.crud-page {
 
 /* Desktop (900px+) */
 @media (min-width: 900px) {
+    /* CORREÇÃO: Alinha o padding e comportamento do topo com o dashboard */
+    .app-header {
+        padding: var(--spacing-xl) var(--spacing-xl);
+    }
+
     .content-area {
         padding: var(--spacing-xl);
     }
@@ -584,14 +440,24 @@ body.crud-page {
         align-items: center;
     }
 
-    .btn-novo {
-        width: auto;
-    }
-
     .mesas-table th:nth-child(3),
     .mesas-table td:nth-child(3),
     .mesas-table th:nth-child(4),
     .mesas-table td:nth-child(4) {
         display: table-cell;
+    }
+}
+
+
+/* ===== CONSISTÊNCIA ENTRE DASHBOARD E CRUD ===== */
+.crud-page .page-header {
+    align-items: center;
+}
+
+@media (max-width: 600px) {
+    .crud-page .page-header .btn-novo,
+    .crud-page .page-header .btn-new-order {
+        width: 100%;
+        min-width: unset;
     }
 }

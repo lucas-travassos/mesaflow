@@ -1,3 +1,15 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MesaFlow | Floor Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="views/assets/css/dashboard.css">
+</head>
+
 <?php
 
 /**
@@ -12,47 +24,19 @@
  * @var string $usuarioNome
  * @var string $usuarioRole
  */
-?>
-<!DOCTYPE html>
-<html lang="pt-BR">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MesaFlow | Floor Management</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="views/assets/css/dashboard.css">
-</head>
+// 1. Configurações que o header.php vai ler dinamicamente
+$tituloPagina = 'MesaFlow | Floor Management';
+$classeCorpo  = 'dashboard-page';
+$jsEspecifico = 'dashboard.js';
+
+// 2. Injeta o cabeçalho único e reaproveitável
+include __DIR__ . '/includes/header.php';
+?>
 
 <body class="dashboard-page">
 
     <main class="app-shell">
-
-        <!-- ==================== HEADER ==================== -->
-        <header class="app-header">
-            <div class="brand-area">
-                <div class="brand-icon"><i class="fa-solid fa-utensils"></i></div>
-                <div class="brand-info">
-                    <h1 class="app-title">MesaFlow</h1>
-                    <p class="app-subtitle">Floor Management</p>
-                </div>
-            </div>
-            <div class="header-actions">
-                <div class="user-menu">
-                    <span class="user-name"><?php echo htmlspecialchars($usuarioNome); ?></span>
-                    <span class="user-role"><?php echo ucfirst($usuarioRole); ?></span>
-                </div>
-                <?php if (strtolower(trim($usuarioRole)) === 'administrador'): ?>
-                    <a href="index.php?action=gerenciar_mesas" class="btn btn-outline-light me-2 d-none d-md-inline-flex align-items-center gap-2" style="border-color: var(--border-soft); color: var(--text-light);">
-                        <i class="fa-solid fa-sliders text-warning"></i> Painel Admin
-                    </a>
-                <?php endif; ?>
-                <a href="index.php?action=logout" class="btn-logout" title="Sair">
-                    <i class="fa-solid fa-sign-out-alt"></i>
-                </a>
-            </div>
-        </header>
 
         <!-- ==================== CONTENT ==================== -->
         <section class="content-area">
@@ -169,33 +153,13 @@
 
                     </article>
                 <?php endforeach; ?>
-            </div>  
+            </div>
 
         </section>
 
-        <!-- ==================== BOTTOM NAV ==================== -->
-        <nav class="bottom-nav">
-            <a href="index.php?action=dashboard" class="nav-item active">
-                <i class="fa-solid fa-table-cells-large"></i><span>FLOOR</span>
-            </a>
-            <a href="#" class="nav-item" title="Pedidos">
-                <i class="fa-solid fa-cart-shopping"></i><span>ORDER</span>
-            </a>
-            <a href="#" class="nav-item" title="Inventário">
-                <i class="fa-solid fa-box"></i><span>INVENTORY</span>
-            </a>
-            <a href="#" class="nav-item" title="Checkout">
-                <i class="fa-solid fa-credit-card"></i><span>CHECKOUT</span>
-            </a>
-            <a href="#" class="nav-item" title="Relatórios">
-                <i class="fa-solid fa-chart-column"></i><span>DASHBOARD</span>
-            </a>
-            <?php if (strtolower(trim($usuarioRole)) === 'administrador'): ?>
-                <a href="index.php?action=gerenciar_mesas" class="nav-item" title="Gerenciar Mesas">
-                    <i class="fa-solid fa-sliders"></i><span>SETTINGS</span>
-                </a>
-            <?php endif; ?>
-        </nav>
+        <?php
+        include __DIR__ . '/includes/footer.php';
+        ?>
 
     </main>
 
