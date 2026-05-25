@@ -1,0 +1,1 @@
+UPDATE usuarios SET senha = '$2y$10$STajKv/bATbXUjcwteUTr.Itu6.CassAZeXHXdarZr3ofCurmhiGi' WHERE email = 'admin@mesaflow.com';
