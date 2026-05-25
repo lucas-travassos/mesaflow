@@ -417,28 +417,19 @@ body.dashboard-page {
     color: var(--accent);
 }
 
-/* Card Actions (Hover) */
+/* =====================================================
+   Card Actions - Botões Estáticos e Responsivos
+===================================================== */
 .card-actions {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.8);
-    border-radius: 12px;
+    width: 100%;
     display: flex;
     gap: var(--spacing-sm);
     align-items: center;
     justify-content: center;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    padding: var(--spacing-md);
+    margin-top: var(--spacing-md);
+    padding-top: var(--spacing-sm);
+    border-top: 1px dashed var(--border-soft);
 }
-
-.table-card:hover .card-actions {
-    opacity: 1;
-}
-
 .btn-action {
     width: 40px;
     height: 40px;

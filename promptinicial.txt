@@ -1,0 +1,17 @@
+Atue como um especialista em backend e desenvolvimento php, html, css, js, bootstrap e vamos desenvolver este projeto com foco no uso dessas tecnologias
+
+
+
+O objetivo do projeto é criarmos um gerenciamento de mesas e pedidos de um restaurante, desenvolvendo crud completo para cadastro de mesas, produtos, usuários
+
+
+
+Você deve usar como base do projeto inteiro o caso de uso anexo e o banco de dados disponível no diretório "databe/mesaflow.sql" dentro do arquivo zip
+
+
+
+O projeto deve seguir normas de estrutura mvc e poo, sendo altamente escalável e reutilizável
+
+
+
+Estarei te passando o que eu preciso e você me retorna com as orientações para aplicação, ok? preparado?

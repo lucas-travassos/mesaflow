@@ -1,15 +1,7 @@
 <?php
 /**
  * Model: Mesa
- * Responsável pela manipulação e lógica de dados da tabela 'mesas'
- * 
- * Métodos principais:
- * - listar() : Retorna todas as mesas com informações de pedidos
- * - buscarPorId() : Busca uma mesa específica
- * - getTotalMesas() : Conta total de mesas
- * - getMesasOcupadas() : Conta mesas com status 'ocupada'
- * - getMesasDisponiveis() : Conta mesas com status 'disponivel'
- * - getFaturamentoTotal() : Soma valor total de todos os pedidos abertos
+ * Responsável por todas as operações de banco relacionadas às mesas.
  */
 
 require_once __DIR__ . '/../config/Database.php';
@@ -23,345 +15,258 @@ class Mesa {
     }
 
     /**
-     * Listar todas as mesas com informações agregadas de pedidos
-     * 
-     * @return array Array de mesas com dados de pedidos (tempo de ocupação, total da conta)
+     * Lista todas as mesas com dados do pedido aberto (se houver).
+     * Alias da coluna do garçom corrigido para 'garcom_nome'.
      */
     public function listar() {
         $query = "
-            SELECT 
+            SELECT
                 m.mesa_id,
                 m.numero,
                 m.status,
                 p.pedido_id,
-                p.status AS pedido_status,
+                p.status       AS pedido_status,
                 p.data_abertura,
                 p.valor_total,
                 TIMESTAMPDIFF(MINUTE, p.data_abertura, NOW()) AS tempo_ocupacao_minutos,
-                u.nome AS garcom_responsavel
+                u.nome         AS garcom_nome
             FROM {$this->table} m
             LEFT JOIN pedidos p ON m.mesa_id = p.mesa_id AND p.status = 'aberto'
             LEFT JOIN usuarios u ON p.usuario_id = u.usuario_id
             ORDER BY m.numero ASC
         ";
-
         $stmt = $this->db->prepare($query);
         $stmt->execute();
-        
-        return $stmt->fetchAll();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**
-     * Buscar uma mesa específica pelo ID
-     * 
-     * @param int $mesaId ID da mesa
-     * @return array|false Dados da mesa ou false se não encontrada
+     * Busca uma mesa pelo ID.
      */
     public function buscarPorId($mesaId) {
-        $query = "
-            SELECT 
-                m.*,
-                p.pedido_id,
-                p.status AS pedido_status,
-                p.data_abertura,
-                p.valor_total,
-                TIMESTAMPDIFF(MINUTE, p.data_abertura, NOW()) AS tempo_ocupacao_minutos
-            FROM {$this->table} m
-            LEFT JOIN pedidos p ON m.mesa_id = p.mesa_id AND p.status = 'aberto'
-            WHERE m.mesa_id = :mesa_id
-            LIMIT 1
-        ";
-
-        $stmt = $this->db->prepare($query);
+        $query = "SELECT * FROM {$this->table} WHERE mesa_id = :mesa_id LIMIT 1";
+        $stmt  = $this->db->prepare($query);
         $stmt->bindParam(':mesa_id', $mesaId, PDO::PARAM_INT);
         $stmt->execute();
-        
-        return $stmt->fetch();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
     /**
-     * Buscar mesa por número
-     * 
-     * @param int $numero Número da mesa
-     * @return array|false Dados da mesa ou false
+     * Busca uma mesa pelo número.
      */
     public function buscarPorNumero($numero) {
         $query = "SELECT * FROM {$this->table} WHERE numero = :numero LIMIT 1";
-        $stmt = $this->db->prepare($query);
+        $stmt  = $this->db->prepare($query);
         $stmt->bindParam(':numero', $numero, PDO::PARAM_INT);
         $stmt->execute();
-        
-        return $stmt->fetch();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
     /**
-     * Contar total de mesas no restaurante
-     * 
-     * @return int Total de mesas
-     */
-    public function getTotalMesas() {
-        $query = "SELECT COUNT(*) as total FROM {$this->table}";
-        $stmt = $this->db->prepare($query);
-        $stmt->execute();
-        $result = $stmt->fetch();
-        
-        return (int) $result['total'];
-    }
-
-    /**
-     * Contar mesas com status 'ocupada'
-     * 
-     * @return int Total de mesas ocupadas
-     */
-    public function getMesasOcupadas() {
-        $query = "SELECT COUNT(*) as total FROM {$this->table} WHERE status = 'ocupada'";
-        $stmt = $this->db->prepare($query);
-        $stmt->execute();
-        $result = $stmt->fetch();
-        
-        return (int) $result['total'];
-    }
-
-    /**
-     * Contar mesas com status 'disponivel'
-     * 
-     * @return int Total de mesas disponíveis
-     */
-    public function getMesasDisponiveis() {
-        $query = "SELECT COUNT(*) as total FROM {$this->table} WHERE status = 'disponivel'";
-        $stmt = $this->db->prepare($query);
-        $stmt->execute();
-        $result = $stmt->fetch();
-        
-        return (int) $result['total'];
-    }
-
-    /**
-     * Calcular faturamento total (soma de todos os pedidos abertos)
-     * 
-     * @return float Valor total em reais
-     */
-    public function getFaturamentoTotal() {
-        $query = "SELECT COALESCE(SUM(valor_total), 0) as total FROM pedidos WHERE status = 'aberto'";
-        $stmt = $this->db->prepare($query);
-        $stmt->execute();
-        $result = $stmt->fetch();
-        
-        return (float) $result['total'];
-    }
-
-    /**
-     * Atualizar status da mesa
-     * 
-     * @param int $mesaId ID da mesa
-     * @param string $status Novo status (disponivel|ocupada)
-     * @return bool Sucesso da operação
-     */
-    public function atualizarStatus($mesaId, $status) {
-        $statusValidos = ['disponivel', 'ocupada'];
-        
-        if (!in_array($status, $statusValidos)) {
-            return false;
-        }
-
-        $query = "UPDATE {$this->table} SET status = :status WHERE mesa_id = :mesa_id";
-        $stmt = $this->db->prepare($query);
-        $stmt->bindParam(':status', $status, PDO::PARAM_STR);
-        $stmt->bindParam(':mesa_id', $mesaId, PDO::PARAM_INT);
-        
-        return $stmt->execute();
-    }
-
-    /**
-     * Abrir uma mesa (mudar para ocupada)
-     * 
-     * @param int $mesaId ID da mesa
-     * @return bool Sucesso da operação
-     */
-    public function abrirMesa($mesaId) {
-        return $this->atualizarStatus($mesaId, 'ocupada');
-    }
-
-    /**
-     * Fechar uma mesa (mudar para disponivel)
-     * 
-     * @param int $mesaId ID da mesa
-     * @return bool Sucesso da operação
-     */
-    public function fecharMesa($mesaId) {
-        return $this->atualizarStatus($mesaId, 'disponivel');
-    }
-
-    /**
-     * Buscar mesas por status
-     * 
-     * @param string $status Status desejado
-     * @return array Array de mesas
-     */
-    public function buscarPorStatus($status) {
-        $query = "SELECT * FROM {$this->table} WHERE status = :status ORDER BY numero ASC";
-        $stmt = $this->db->prepare($query);
-        $stmt->bindParam(':status', $status, PDO::PARAM_STR);
-        $stmt->execute();
-        
-        return $stmt->fetchAll();
-    }
-
-    /**
-     * Criar uma nova mesa
-     * 
-     * @param int $numero Número da mesa
-     * @param string $status Status inicial (padrão: disponivel)
-     * @return bool|int Sucesso e ID da mesa criada
+     * Cria uma nova mesa.
+     * Retorna o ID inserido ou false em caso de falha.
      */
     public function criar($numero, $status = 'disponivel') {
-        // Validar número
         if (!is_numeric($numero) || $numero <= 0) {
             return false;
         }
-
-        // Verificar se número já existe
-        $existe = $this->buscarPorNumero($numero);
-        if ($existe) {
-            return false;
-        }
-
-        // Validar status
-        $statusValidos = ['disponivel', 'ocupada'];
-        if (!in_array($status, $statusValidos)) {
+        if (!in_array($status, ['disponivel', 'ocupada'])) {
             $status = 'disponivel';
         }
-
+        if ($this->buscarPorNumero($numero)) {
+            return false; // número já existe
+        }
         $query = "INSERT INTO {$this->table} (numero, status) VALUES (:numero, :status)";
-        $stmt = $this->db->prepare($query);
+        $stmt  = $this->db->prepare($query);
         $stmt->bindParam(':numero', $numero, PDO::PARAM_INT);
         $stmt->bindParam(':status', $status, PDO::PARAM_STR);
-
         if ($stmt->execute()) {
-            return $this->db->lastInsertId();
+            return (int) $this->db->lastInsertId();
         }
-
         return false;
     }
 
     /**
-     * Atualizar dados de uma mesa
-     * 
-     * @param int $mesaId ID da mesa
-     * @param array $dados Array com campos a atualizar (numero, status)
-     * @return bool Sucesso da operação
+     * Atalho para criar mesa sem status (compatibilidade interna).
      */
-    public function atualizar($mesaId, $dados) {
-        $camposPermitidos = ['numero', 'status'];
-        $atualizacoes = [];
-        $params = [];
+    public function criarMesa($numero) {
+        return $this->criar($numero) ? true : false;
+    }
 
-        // Montar query dinamicamente
+    /**
+     * Atualiza campos de uma mesa via array associativo.
+     * Aceita: numero, status.
+     */
+    public function atualizar($mesaId, array $dados) {
+        if (empty($dados)) {
+            return false;
+        }
+
+        $sets   = [];
+        $params = [':mesa_id' => $mesaId];
+
         foreach ($dados as $campo => $valor) {
-            if (in_array($campo, $camposPermitidos)) {
-                if ($campo === 'numero') {
-                    // Validar se novo número não existe
-                    $mesaExistente = $this->buscarPorNumero($valor);
-                    if ($mesaExistente && $mesaExistente['mesa_id'] != $mesaId) {
-                        continue; // Pular este campo
-                    }
-                    $atualizacoes[] = "numero = :numero";
-                    $params[':numero'] = (int) $valor;
+            if ($campo === 'numero' && is_numeric($valor) && $valor > 0) {
+                $existente = $this->buscarPorNumero($valor);
+                if ($existente && (int)$existente['mesa_id'] !== (int)$mesaId) {
+                    return false; // número em uso por outra mesa
                 }
-
-                if ($campo === 'status') {
-                    $statusValidos = ['disponivel', 'ocupada'];
-                    if (!in_array($valor, $statusValidos)) {
-                        continue; // Pular este campo
-                    }
-                    $atualizacoes[] = "status = :status";
-                    $params[':status'] = $valor;
-                }
+                $sets[]           = 'numero = :numero';
+                $params[':numero'] = (int) $valor;
+            } elseif ($campo === 'status' && in_array($valor, ['disponivel', 'ocupada'])) {
+                $sets[]           = 'status = :status';
+                $params[':status'] = $valor;
             }
         }
 
-        if (empty($atualizacoes)) {
+        if (empty($sets)) {
             return false;
         }
 
-        $query = "UPDATE {$this->table} SET " . implode(", ", $atualizacoes) . " WHERE mesa_id = :mesa_id";
-        $stmt = $this->db->prepare($query);
-        $params[':mesa_id'] = $mesaId;
-
+        $query = "UPDATE {$this->table} SET " . implode(', ', $sets) . " WHERE mesa_id = :mesa_id";
+        $stmt  = $this->db->prepare($query);
         foreach ($params as $chave => $valor) {
             $stmt->bindValue($chave, $valor);
         }
-
         return $stmt->execute();
     }
 
     /**
-     * Deletar uma mesa
-     * 
-     * Nota: Só permite deletar mesas disponíveis (sem pedidos abertos)
-     * 
-     * @param int $mesaId ID da mesa
-     * @return bool Sucesso da operação
+     * Atalho para atualizar número e/ou status (compatibilidade com MesaController).
      */
-    public function deletar($mesaId) {
-        // Buscar mesa
-        $mesa = $this->buscarPorId($mesaId);
-        if (!$mesa) {
+    public function atualizarMesa($mesaId, $numero, $status = null) {
+        $dados = ['numero' => $numero];
+        if ($status !== null) {
+            $dados['status'] = $status;
+        }
+        return $this->atualizar($mesaId, $dados);
+    }
+
+    /**
+     * Abre uma mesa: cria um pedido 'aberto' e marca a mesa como 'ocupada'.
+     * Retorna o pedido_id criado ou false.
+     */
+    public function abrirMesa($mesaId, $usuarioId) {
+        // Verifica se já existe pedido aberto nessa mesa
+        $queryCheck = "SELECT pedido_id FROM pedidos WHERE mesa_id = :mesa_id AND status = 'aberto' LIMIT 1";
+        $stmtCheck  = $this->db->prepare($queryCheck);
+        $stmtCheck->bindParam(':mesa_id', $mesaId, PDO::PARAM_INT);
+        $stmtCheck->execute();
+        if ($stmtCheck->fetch()) {
+            return false; // mesa já está ocupada
+        }
+
+        $this->db->beginTransaction();
+        try {
+            // Cria o pedido
+            $queryPedido = "INSERT INTO pedidos (mesa_id, usuario_id, status, valor_total) VALUES (:mesa_id, :usuario_id, 'aberto', 0.00)";
+            $stmtPedido  = $this->db->prepare($queryPedido);
+            $stmtPedido->bindParam(':mesa_id',   $mesaId,   PDO::PARAM_INT);
+            $stmtPedido->bindParam(':usuario_id', $usuarioId, PDO::PARAM_INT);
+            $stmtPedido->execute();
+            $pedidoId = (int) $this->db->lastInsertId();
+
+            // Atualiza status da mesa
+            $queryMesa = "UPDATE {$this->table} SET status = 'ocupada' WHERE mesa_id = :mesa_id";
+            $stmtMesa  = $this->db->prepare($queryMesa);
+            $stmtMesa->bindParam(':mesa_id', $mesaId, PDO::PARAM_INT);
+            $stmtMesa->execute();
+
+            $this->db->commit();
+            return $pedidoId;
+        } catch (Exception $e) {
+            $this->db->rollBack();
             return false;
         }
+    }
 
-        // Verificar se mesa tem pedido aberto
-        if ($mesa['pedido_id'] !== null) {
-            return false; // Não permite deletar mesa com pedido aberto
+    /**
+     * Fecha uma mesa: marca o pedido como 'pago' e a mesa como 'disponivel'.
+     * CORREÇÃO: usava 'finalizado' que não existe no ENUM — corrigido para 'pago'.
+     */
+    public function fecharMesa($mesaId) {
+        $this->db->beginTransaction();
+        try {
+            $queryPedido = "UPDATE pedidos SET status = 'pago', data_fechamento = NOW() WHERE mesa_id = :mesa_id AND status = 'aberto'";
+            $stmtPedido  = $this->db->prepare($queryPedido);
+            $stmtPedido->bindParam(':mesa_id', $mesaId, PDO::PARAM_INT);
+            $stmtPedido->execute();
+
+            $queryMesa = "UPDATE {$this->table} SET status = 'disponivel' WHERE mesa_id = :mesa_id";
+            $stmtMesa  = $this->db->prepare($queryMesa);
+            $stmtMesa->bindParam(':mesa_id', $mesaId, PDO::PARAM_INT);
+            $stmtMesa->execute();
+
+            $this->db->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            return false;
         }
+    }
 
-        // Se chegou aqui, mesa está disponível e sem pedidos
+    /**
+     * Deleta uma mesa. Bloqueia se houver pedido aberto.
+     */
+    public function deletar($mesaId) {
+        $queryCheck = "SELECT pedido_id FROM pedidos WHERE mesa_id = :mesa_id AND status = 'aberto' LIMIT 1";
+        $stmtCheck  = $this->db->prepare($queryCheck);
+        $stmtCheck->bindParam(':mesa_id', $mesaId, PDO::PARAM_INT);
+        $stmtCheck->execute();
+        if ($stmtCheck->fetch()) {
+            return false;
+        }
         $query = "DELETE FROM {$this->table} WHERE mesa_id = :mesa_id";
-        $stmt = $this->db->prepare($query);
+        $stmt  = $this->db->prepare($query);
         $stmt->bindParam(':mesa_id', $mesaId, PDO::PARAM_INT);
-
         return $stmt->execute();
     }
 
+    // ─────────────────────────────────────────────
+    // Métodos de agregação (totalizadores)
+    // ─────────────────────────────────────────────
+
+    public function getTotalMesas() {
+        $stmt = $this->db->query("SELECT COUNT(*) AS total FROM {$this->table}");
+        return (int) $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+    }
+
+    public function getMesasOcupadas() {
+        $stmt = $this->db->query("SELECT COUNT(*) AS total FROM {$this->table} WHERE status = 'ocupada'");
+        return (int) $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+    }
+
+    public function getMesasDisponiveis() {
+        $stmt = $this->db->query("SELECT COUNT(*) AS total FROM {$this->table} WHERE status = 'disponivel'");
+        return (int) $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+    }
+
+    public function getFaturamentoTotal() {
+        $stmt = $this->db->query("SELECT COALESCE(SUM(valor_total), 0) AS total FROM pedidos WHERE status = 'aberto'");
+        return (float) $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+    }
+
+    // ─────────────────────────────────────────────
+    // Helpers estáticos de formatação
+    // ─────────────────────────────────────────────
+
     /**
-     * Converter tempo em minutos para formato legível (ex: "45 min" ou "1h 30min")
-     * 
-     * @param int $minutos Número de minutos
-     * @return string Tempo formatado
+     * Formata minutos em string legível (ex: 1h 30m).
      */
     public static function formatarTempo($minutos) {
-        if ($minutos === null) {
-            return '0m';
-        }
-
-        if ($minutos < 60) {
-            return $minutos . 'm';
-        }
-
-        $horas = floor($minutos / 60);
-        $mins = $minutos % 60;
-        
-        if ($mins === 0) {
-            return $horas . 'h';
-        }
-
-        return $horas . 'h ' . $mins . 'm';
+        if ($minutos === null || $minutos <= 0) return '0m';
+        if ($minutos < 60) return $minutos . 'm';
+        $horas = (int) floor($minutos / 60);
+        $mins  = $minutos % 60;
+        return $mins === 0 ? $horas . 'h' : $horas . 'h ' . $mins . 'm';
     }
 
     /**
-     * Calcular percentual de progresso para barra circular (0-100)
-     * Assume que uma mesa lota em ~120 minutos (2 horas)
-     * 
-     * @param int $minutos Tempo de ocupação em minutos
-     * @return int Percentual (0-100)
+     * Calcula percentual de progresso de ocupação (base: 120 min = 100%).
+     * CORREÇÃO: método estava sendo chamado no dashboard.php mas não existia.
      */
     public static function calcularProgressoOcupacao($minutos) {
-        if ($minutos === null) {
-            return 0;
-        }
-
-        $progress = ($minutos / 120) * 100;
-        
-        return min($progress, 100); // Cap em 100%
+        if ($minutos === null || $minutos <= 0) return 0;
+        return (int) min(round(($minutos / 120) * 100), 100);
     }
 }
