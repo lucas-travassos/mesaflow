@@ -58,7 +58,7 @@ class LoginController {
                     $_SESSION['usuario_role']   = $usuario['nivel_acesso']; // administrador, garcom, caixa
 
                     // Redirecionamento para o dashboard de mesas
-                    header("Location: index.php?action=gerenciar_mesas");
+                    header("Location: index.php?action=floor");
                     exit;
                 } else {
                     $this->log("✗ Senha inválida");
